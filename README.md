@@ -34,3 +34,12 @@ By turning invoices into on-chain assets, we enable:
 
 ## 🛡 License
 This project is licensed under the **Apache License 2.0**.A tokenizing Aptos dapp.
+
+## 🔐 Environment Variables (For Local Development)
+
+To run this project locally, create a `.env` file in the root directory.
+
+You can copy from the example file:
+
+```bash
+cp .env.example .env
