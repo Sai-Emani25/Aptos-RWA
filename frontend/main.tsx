@@ -1,4 +1,5 @@
 import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
+import "./index.css";
 import "@aptos-labs/wallet-adapter-ant-design/dist/index.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
@@ -10,13 +11,13 @@ const optInWallets = ["Petra"] as const;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <AptosWalletAdapterProvider 
-      autoConnect={true} 
+    <AptosWalletAdapterProvider
+      autoConnect={true}
       optInWallets={optInWallets}
-      dappConfig={{ 
+      dappConfig={{
         network: Network.TESTNET,
         // Adding a name helps the UI identify the dApp
-        aptosConnect: { dappName: "RWA Invoice Minter" } 
+        aptosConnect: { dappName: "RWA Invoice Minter" }
       }}
       onError={(error) => console.log("Wallet Error:", error)}
     >
