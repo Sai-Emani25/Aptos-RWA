@@ -54,8 +54,8 @@ function App() {
     return (
       <DashboardLayout view={view} setView={setView} totalValue={totalValue}>
         <div className="flex flex-col items-center justify-center h-full min-h-[50vh]">
-          <div className="bg-slate-50 p-12 rounded-3xl border border-slate-200 text-center max-w-md w-full">
-            <h2 className="text-2xl font-bold text-slate-900 mb-8">Institutional Gateway</h2>
+          <div className="bg-card p-12 rounded-3xl border border-border text-center max-w-md w-full shadow-lg">
+            <h2 className="text-2xl font-bold text-foreground mb-8">Institutional Gateway</h2>
             <div className="grid gap-3 w-full">
               {wallets && wallets.length > 0 ? (
                 wallets.map((w) => (
