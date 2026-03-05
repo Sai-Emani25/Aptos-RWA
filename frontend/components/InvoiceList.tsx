@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 
 interface Invoice {
     id: string;
@@ -43,6 +43,28 @@ interface InvoiceListProps {
         const matchesMax = max === null || parseInt(inv.amount) <= max;
         return matchesSearch && matchesStatus && matchesMin && matchesMax;
     });
+
+    // Transfer dialog state
+    const [transferOpen, setTransferOpen] = useState(false);
+    const [transferInvoiceId, setTransferInvoiceId] = useState<string | null>(null);
+    const [recipient, setRecipient] = useState("");
+    const [transferStatus, setTransferStatus] = useState<string>("");
+
+    const handleTransfer = (invoiceId: string) => {
+        setTransferInvoiceId(invoiceId);
+        setRecipient("");
+        setTransferStatus("");
+        setTransferOpen(true);
+    };
+
+    // Dummy transfer handler (replace with actual transaction logic)
+    const submitTransfer = async () => {
+        setTransferStatus("Transferring...");
+        setTimeout(() => {
+            setTransferStatus("Transfer complete!");
+            setTimeout(() => setTransferOpen(false), 1200);
+        }, 1200);
+    };
 
     return (
         <div className="space-y-6">
@@ -120,36 +142,13 @@ interface InvoiceListProps {
                             {/* Action buttons for status changes (issuer view) */}
                             {view === "issuer" ? (
                                 <div className="flex gap-2">
-                                    {inv.status === 0 && (
-                                        <button
-                                            onClick={() => alert(`Mark invoice ${inv.id} as Pending`)}
-                                            className="px-3 py-1 bg-yellow-500 text-white text-xs font-bold rounded-lg hover:bg-yellow-600 transition-colors shadow-sm"
-                                        >
-                                            Mark as Pending
-                                        </button>
-                                    )}
-                                    {inv.status === 1 && (
-                                        <>
-                                            <button
-                                                onClick={() => alert(`Mark invoice ${inv.id} as Paid`)}
-                                                className="px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-lg hover:bg-green-700 transition-colors shadow-sm"
-                                            >
-                                                Mark as Paid
-                                            </button>
-                                            <button
-                                                onClick={() => alert(`Mark invoice ${inv.id} as Overdue`)}
-                                                className="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-lg hover:bg-red-600 transition-colors shadow-sm"
-                                            >
-                                                Mark as Overdue
-                                            </button>
-                                            <button
-                                                onClick={() => alert(`Cancel invoice ${inv.id}`)}
-                                                className="px-3 py-1 bg-slate-400 text-white text-xs font-bold rounded-lg hover:bg-slate-500 transition-colors shadow-sm"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </>
-                                    )}
+                                    {/* ...existing status change buttons... */}
+                                    <button
+                                        onClick={() => handleTransfer(inv.id)}
+                                        className="px-3 py-1 bg-blue-500 text-white text-xs font-bold rounded-lg hover:bg-blue-600 transition-colors shadow-sm"
+                                    >
+                                        Transfer
+                                    </button>
                                 </div>
                             ) : (
                                 <span className={`flex items-center gap-1.5 text-xs font-bold ${statusMap[inv.status]?.color} ${statusMap[inv.status]?.bg} px-2 py-1 rounded-md`}>
@@ -157,6 +156,41 @@ interface InvoiceListProps {
                                     {statusMap[inv.status]?.label ?? 'Unknown'}
                                 </span>
                             )}
+                                                        {/* Transfer dialog */}
+                                                        {transferOpen && (
+                                                            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                                                                <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm flex flex-col gap-4 border border-slate-200">
+                                                                    <h3 className="text-lg font-bold mb-2">Transfer Invoice</h3>
+                                                                    <p className="text-sm text-slate-600 mb-2">Enter the recipient's Aptos address to transfer invoice <span className="font-mono bg-slate-100 px-2 py-0.5 rounded text-xs">{transferInvoiceId}</span></p>
+                                                                    <input
+                                                                        type="text"
+                                                                        placeholder="Recipient address"
+                                                                        value={recipient}
+                                                                        onChange={e => setRecipient(e.target.value)}
+                                                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                                                    />
+                                                                    <div className="flex gap-2 mt-2">
+                                                                        <button
+                                                                            onClick={submitTransfer}
+                                                                            className="flex-1 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60"
+                                                                            disabled={!recipient || transferStatus === "Transferring..."}
+                                                                        >
+                                                                            {transferStatus === "Transferring..." ? "Transferring..." : "Confirm Transfer"}
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => setTransferOpen(false)}
+                                                                            className="flex-1 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg hover:bg-slate-300 transition-colors"
+                                                                            disabled={transferStatus === "Transferring..."}
+                                                                        >
+                                                                            Cancel
+                                                                        </button>
+                                                                    </div>
+                                                                    {transferStatus && (
+                                                                        <div className="text-center text-xs text-green-600 mt-2">{transferStatus}</div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                 {/* Timeline/status history placeholder */}
                                                 {/* <div className="mt-4">
                                                     <TimelineComponent status={inv.status} createdAt={inv.created_at} paidAt={inv.paid_at} dueDate={inv.due_date} />

@@ -1,3 +1,51 @@
+            struct InvoiceTransferredEvent has drop, store {
+                from: address,
+                to: address,
+                invoice_id: String,
+            }
+
+            struct InvoiceEvents has key {
+                transfer_events: vector<InvoiceTransferredEvent>,
+            }
+
+            public entry fun transfer_invoice(sender: &signer, recipient: address, invoice_id: String) acquires InvoiceStore, InvoiceEvents {
+                let sender_addr = signer::address_of(sender);
+                assert!(exists<InvoiceStore>(sender_addr), 2001);
+                let sender_store = borrow_global_mut<InvoiceStore>(sender_addr);
+                let len = vector::length(&sender_store.invoices);
+                let mut i = 0u64;
+                let mut found = false;
+                let mut invoice: Option<Invoice> = option::none<Invoice>();
+                while (i < len) {
+                    let inv = vector::borrow(&sender_store.invoices, i);
+                    if (inv.id == invoice_id) {
+                        invoice = option::some(*inv);
+                        vector::remove(&mut sender_store.invoices, i);
+                        found = true;
+                        break;
+                    };
+                    i = i + 1;
+                };
+                assert!(found, 2002); // Invoice not found
+
+                // Ensure recipient has a store
+                if (!exists<InvoiceStore>(recipient)) {
+                    let store = InvoiceStore { invoices: vector::empty<Invoice>() };
+                    move_to(&create_signer(recipient), store);
+                }
+                let recipient_store = borrow_global_mut<InvoiceStore>(recipient);
+                let inv = option::extract(invoice);
+                vector::push_back(&mut recipient_store.invoices, inv);
+
+                // Emit event
+                if (!exists<InvoiceEvents>(sender_addr)) {
+                    let events = InvoiceEvents { transfer_events: vector::empty<InvoiceTransferredEvent>() };
+                    move_to(sender, events);
+                }
+                let events = borrow_global_mut<InvoiceEvents>(sender_addr);
+                let event = InvoiceTransferredEvent { from: sender_addr, to: recipient, invoice_id };
+                vector::push_back(&mut events.transfer_events, event);
+            }
         /// Returns the number of invoices for an owner.
         public fun get_invoice_count(owner: address): u64 acquires InvoiceStore {
             if (!exists<InvoiceStore>(owner)) return 0;
